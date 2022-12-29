@@ -1,0 +1,159 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Design document
+;;; ===============
+;;;
+;;; Exported
+;;; --------
+;;;
+;;; Usage: make(a,b);
+;;; Pre:   a and b are floating point numbers, b is not zero
+;;; Value: The complex number a + ib
+;;; 
+;;; Usage: getReal(z)
+;;;	Pre:   z is a complex number
+;;; Value: The real part of the complex number
+;;;
+;;; Usage: getImaginary(z)
+;;;	Pre:   z is a complex number
+;;;	Value: The imaginary part of the complex number
+;;;
+;;; Usage: x+++y
+;;; Pre:   x and y are rational numbers
+;;; Value: The rational number x+y
+;;;
+;;; Usage: x---y
+;;; Pre:   x and y are rational numbers
+;;; Value: The rational number x-y
+;;;
+;;; Usage: x***y
+;;; Pre:   x and y are rational numbers
+;;; Value: The rational number x*y
+;;;
+;;; Usage: x///y
+;;; Pre:   x and y are rational numbers, y is not zero
+;;; Value: The rational number x/y
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+"complex.mmod" = 
+!
+{{
+;;;
+;;;	Data invariant: A complex number with real part a and
+;;; imaginary part b is stored as a pair [a$b] with p and
+;;; q being bigIntegers.
+;;;
+
+make = 
+	fun(a, b)
+	{
+		a = double(a);
+		b = double(b);
+		[a$b];
+	};
+	
+getReal = 
+	fun(z)
+	{
+		head(z);
+	};
+	
+getImaginary = 
+	fun(z)
+	{
+		tail(z);
+	};
+	
++++ =
+	fun(a, b)
+	{
+		var aReal = head(a);
+		var aImaginary = tail(a);
+		var bReal = head(b);
+		var bImaginary = tail(b);
+		make((aReal + bReal), (aImaginary + bImaginary));
+	};
+
+--- = 
+	fun(a, b)
+	{
+		var aReal = head(a);
+		var aImaginary = tail(a);
+		var bReal = head(b);
+		var bImaginary = tail(b);
+		make((aReal - bReal), (aImaginary - bImaginary));
+	};
+	
+*** = 
+	fun(a, b)
+	{
+		var aReal = head(a);
+		var aImaginary = tail(a);
+		var bReal = head(b);
+		var bImaginary = tail(b);
+		make((aReal * bReal - aImaginary * bImaginary), (aReal * bImaginary + aImaginary * bReal));
+	};
+	
+/// = 
+	fun(a, b)
+	{
+		var aReal = head(a);
+		var aImaginary = tail(a);
+		var bReal = head(b);
+		var bImaginary = tail(b);
+		
+		val d = bReal * bReal + bImaginary * bImaginary;
+		make((aReal * bReal + aImaginary * bImaginary) / d, (aImaginary * bReal - aReal * bImaginary) / d);
+	};
+}}
+*
+BASIS
+;
+
+"test.mexe" = main in
+!
+{{
+main = 
+	fun()
+	{
+		;;; Create two complex numbers.
+		var a = make(3, 2);
+		var b = make(6, 4);
+		write("a = "); writeln(a);
+		write("b = "); writeln(b);
+		
+		;;; Add a + b.
+		;;; Answer should be 9+6i.
+		write("a +++ b = "); writeln(a+++b);
+
+		;;; Sub a - b.
+		;;; Answer should be -3-2i.
+		write("a --- b = "); writeln(a---b);
+		
+		;;; Multiply a * b.
+		;;; Answer should be 10+24i.
+		write("a *** b = "); writeln(a***b);
+		
+		;;; Divide a / b.
+		;;; Answer should be 1/2.
+		write("a /// b = "); writeln(a///b);
+		
+		;;; Get real part of complex number a.
+		;;; Answer should be 3.
+		write("Real part of a = "); writeln(getReal(a));
+		
+		;;; Get imaginary part of complex number a.
+		;;; Answer should be 2.
+		write("Imaginary part of a = "); writeln(getImaginary(a));
+		
+		;;; Divide 5+10i / 2-4i.
+		;;; Answer should be -1.5 +2i.
+		write("5+10i /// 2-4i = ");
+		writeln((make(5, 10)) /// (make(2, -4)));
+	};
+}}
+*
+"complex.mmod"
+*
+BASIS
+;
